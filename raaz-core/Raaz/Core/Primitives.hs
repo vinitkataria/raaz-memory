@@ -25,7 +25,6 @@ module Raaz.Core.Primitives
        , primitiveOf, withGadget, withGadgetFinalize, withSecureGadget, withSecureGadgetFinalize
        , PaddableGadget(..)
        , CGadget(..), HGadget(..)
-       , HasPadding(..)
        , CryptoPrimitive(..)
        , BLOCKS, blocksOf
        , transformGadget, transformGadgetFile
@@ -197,34 +196,6 @@ withSecureGadgetFinalize iv action = withSecureGadget iv
 -- The minimal complete definition include `padLength`,
 -- `maxAdditionalBlocks` and one of `padding` or `unsafePad`.
 --
-class Primitive p => HasPadding p where
-
-  -- | This combinator returns the length of the padding that is to be
-  -- added to the message.
-  padLength :: p           -- ^ the block primitive
-            -> BITS Word64 -- ^ the total message size in bits.
-            -> BYTES Int
-
-  -- | This function returns the actual bytestring to pad the message
-  -- with. There is a default definition of this message in terms of
-  -- the unsafePad function. However, implementations might want to
-  -- give a more efficient definition.
-  padding   :: p           -- ^ the block primitive
-            -> BITS Word64 -- ^ the total message size in bits.
-            -> B.ByteString
-  padding p bits = unsafeCreate len padIt
-        where BYTES len = padLength p bits
-              padIt     = unsafePad p bits . castPtr
-
-  -- | This is the unsafe version of the padding function. It is
-  -- unsafe in the sense that the call @unsafePad h bits cptr@ assumes
-  -- that there is enough free space to put the padding string at the
-  -- given pointer.
-  unsafePad :: p           -- ^ the block primitive
-            -> BITS Word64 -- ^ the total message size in bits
-            -> CryptoPtr   -- ^ the message buffer
-            -> IO ()
-  unsafePad p bits = unsafeCopyToCryptoPtr $ padding p bits
 
   -- | This counts the number of additional blocks required so that
   -- one can hold the padding. This function is useful if you want to
