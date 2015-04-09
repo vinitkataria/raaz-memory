@@ -2,7 +2,7 @@
 -- parser which has only an applicative instance.
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 module Raaz.Core.Parse.Applicative
-       ( Parser, parseWidth, parseError
+       ( Parser, parseWidth, parseError, skip
        , runParser, runParser', unsafeRunParser
        , parse, parseStorable
        , parseVector, parseStorableVector
@@ -36,7 +36,11 @@ makeParser l action = TwistRA { twistFieldA       = liftToFieldM action
 
 -- | A parser that fails with a given error message.
 parseError  :: String -> Parser a
-parseError msg = makeParser (0 :: BYTES Int) $ \ _ -> fail msg
+parseError msg = makeParser (0 :: BYTES Int) $ const $ fail msg
+
+-- | Skip a given length with out reading anything.
+skip :: LengthUnit l => l -> Parser ()
+skip = flip makeParser $ const $ return ()
 
 -- | Return the bytes that this parser will read.
 parseWidth :: Parser a -> BYTES Int
