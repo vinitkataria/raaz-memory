@@ -9,7 +9,8 @@
 
 module Raaz.Core.Write
        ( Write, bytesToWrite, tryWriting, unsafeWrite
-       , write, writeStorable, writeVector, writeStorableVector
+       -- * Write combinators.
+       , write, writeStorable, writeVector, writeStorableVector, move
        , writeBytes, writeByteString
        ) where
 
@@ -42,8 +43,12 @@ type BytesMonoid = Sum (BYTES Int)
 type Write = SemiR WriteAction BytesMonoid
 
 -- | Create a write action.
-makeWrite :: BYTES Int -> (CryptoPtr -> IO ()) -> Write
-makeWrite sz action = SemiR (liftToFieldM action, Sum sz)
+makeWrite :: LengthUnit sz => sz -> (CryptoPtr -> IO ()) -> Write
+makeWrite sz action = SemiR (liftToFieldM action, Sum $ inBytes sz)
+
+-- | Move a distance of @l@ leaving the data there untouched
+move :: LengthUnit l => l -> Write
+move = flip makeWrite $ const $ return ()
 
 -- | Returns the bytes that will be written when the write action is performed.
 bytesToWrite :: Write -> BYTES Int
