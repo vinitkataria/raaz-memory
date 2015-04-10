@@ -61,8 +61,8 @@ unsafeRunParser :: Parser a -> CryptoPtr -> IO a
 unsafeRunParser = runFieldM . twistFieldA
 
 -- | The primary purpose of this function is to satisfy type checkers.
-undefParse :: Parser a -> a
-undefParse _ = undefined
+undefParseValue :: Parser a -> a
+undefParseValue _ = undefined
 
 -- | Parses a value which is an instance of Storable. Beware that this
 -- parser expects that the value is stored in machine endian. Mostly
@@ -70,7 +70,7 @@ undefParse _ = undefined
 -- `Storable` instance.
 parseStorable :: Storable a => Parser a
 parseStorable = pa
-  where pa = makeParser (byteSize $ undefParse pa) (peek . castPtr)
+  where pa = makeParser (byteSize $ undefParseValue pa) (peek . castPtr)
 
 -- | Parse a crypto value. Endian safety is take into account
 -- here. This is what you would need when you parse packets from an
@@ -78,7 +78,7 @@ parseStorable = pa
 -- function in a complicated `EndianStore` instance.
 parse :: EndianStore a => Parser a
 parse = pa
-  where pa = makeParser (byteSize $ undefParse pa) load
+  where pa = makeParser (byteSize $ undefParseValue pa) load
 
 -- | Parses a strict bytestring of a given length.
 parseByteString :: LengthUnit l => l -> Parser ByteString
